@@ -1,5 +1,6 @@
 from turtle import Screen
-from window_manager import WinManager
+from game_manager import GameManager
+from player.player import Ship
 
 BACKGROUND_IMG = "icons/background.gif"
 
@@ -10,8 +11,8 @@ screen.bgpic(BACKGROUND_IMG)
 screen_width = screen.window_width()
 screen_height = screen.window_height()
 
-win_manager = WinManager(screen, screen_width, screen_height)
+GameManager(screen, screen_width, screen_height)
 
-print("HELLO")
+ship = Ship(screen)
 
 screen.mainloop()
