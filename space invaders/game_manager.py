@@ -17,7 +17,14 @@ DISTANCE_BOTTOM_BORDER = -300
 
 
 class GameManager(Turtle):
-    def __init__(self, screen_obj, width: int, height: int):
+    def __init__(self, screen_obj, width: int, height: int, ship_obj):
+        """
+
+        :param screen_obj:
+        :param width:
+        :param height:
+        :param ship_obj:
+        """
         super().__init__()
 
         self.speed(0)
@@ -36,6 +43,10 @@ class GameManager(Turtle):
         self.screen.addshape(START_BTN)
         self.start_btn.shape(START_BTN)
         self.start_btn.onclick(self.__start_game)
+
+        self.ship = ship_obj
+
+        self.screen.update()
 
         logging.info("WinManager class initialised")
 
@@ -77,9 +88,9 @@ class GameManager(Turtle):
         self.pensize(PEN_WIDTH_PRIMARY)
         self.penup()
         self.pencolor(PEN_COLOUR_PRIMARY)
-        self.goto(self.__half_width-DISTANCE_FROM_BORDER, DISTANCE_BOTTOM_BORDER)
+        self.goto(self.__half_width - DISTANCE_FROM_BORDER, DISTANCE_BOTTOM_BORDER)
         self.pendown()
-        self.setx(-self.__half_width+DISTANCE_FROM_BORDER)
+        self.setx(-self.__half_width + DISTANCE_FROM_BORDER)
 
         self.pensize(PEN_WIDTH_SECONDARY)
         self.penup()
@@ -100,4 +111,5 @@ class GameManager(Turtle):
         self.__draw_border()
         self.__create_bottom_bar()
 
-
+        self.ship.init(self.__half_height)
+        self.screen.update()
