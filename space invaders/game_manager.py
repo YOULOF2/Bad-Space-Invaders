@@ -17,15 +17,19 @@ DISTANCE_BOTTOM_BORDER = -300
 
 
 class GameManager(Turtle):
-    def __init__(self, screen_obj, width: int, height: int, ship_obj):
+    def __init__(self, screen_obj, width: int, height: int, ship_obj, alien_dealer):
         """
-
-        :param screen_obj:
-        :param width:
-        :param height:
-        :param ship_obj:
-        """
+        
+        :param screen_obj: 
+        :param width: 
+        :param height: 
+        :param ship_obj: 
+        :param alien_dealer: 
+        """""
         super().__init__()
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.StreamHandler())
 
         self.speed(0)
 
@@ -40,19 +44,20 @@ class GameManager(Turtle):
 
         self.start_btn = Turtle()
         self.start_btn.goto(0, 0)
-        self.screen.addshape(START_BTN)
+        self.screen.register_shape(START_BTN)
         self.start_btn.shape(START_BTN)
         self.start_btn.onclick(self.__start_game)
 
         self.ship = ship_obj
+        self.alien_dealer = alien_dealer
 
         self.screen.update()
 
-        logging.info("WinManager class initialised")
+        self.logger.info("WinManager class initialised")
 
     # Private classes
     def __draw_border(self):
-        logging.info("Drawing border")
+        self.logger.info("Drawing border")
         self.__draw(PEN_WIDTH_PRIMARY, PEN_COLOUR_PRIMARY)
         self.__draw(PEN_WIDTH_SECONDARY, PEN_COLOUR_SECONDARY)
 
@@ -77,7 +82,7 @@ class GameManager(Turtle):
         self.setx(self.__half_width - DISTANCE_FROM_BORDER)
 
     def __place_title(self):
-        logging.info("Placing title")
+        self.logger.info("Placing title")
         self.penup()
         y = self.__half_height - DISTANCE_FROM_BORDER - 100
         self.goto(x=0, y=y)
@@ -99,17 +104,18 @@ class GameManager(Turtle):
         self.pendown()
         self.setx(-self.__half_width + DISTANCE_FROM_BORDER)
 
-    # Public classes
-    def __start_game(self, *args):
-        logging.info("Starting game")
-        self.start_btn.reset()
-        self.start_btn.hideturtle()
+        self.screen.update()
 
-        self.reset()
-        self.hideturtle()
-        self.speed(0)
+    def __start_game(self, *args):
+        self.logger.info("Starting game")
+
+        self.start_btn.hideturtle()
+        del self.start_btn
+        self.clear()
         self.__draw_border()
         self.__create_bottom_bar()
+        self.screen.update()
 
         self.ship.init(self.__half_height)
-        self.screen.update()
+
+        self.alien_dealer.next_stage()
