@@ -1,8 +1,10 @@
-from turtle import Screen
-from game_manager import GameManager
-from player import Ship
 import logging
+from turtle import Screen
+
 from aliens import AlienDealer
+from game_manager import GameManager
+from global_vars import global_vars
+from player import Ship
 
 logging.basicConfig(filename="logfile.log", encoding="utf-8", level=logging.DEBUG, format="%(levelname)s: %(message)s")
 
@@ -16,9 +18,13 @@ screen.tracer(0)
 screen_width = screen.window_width()
 screen_height = screen.window_height()
 
-alien_dealer = AlienDealer(screen)
-ship = Ship(screen, alien_dealer)
-gm = GameManager(screen, screen_width, screen_height, ship, alien_dealer)
+global_vars.register(screen=screen)
+alien_dealer = AlienDealer()
+global_vars.register(alien_dealer=alien_dealer)
+ship = Ship()
+global_vars.register(ship=ship)
+gm = GameManager(screen_width, screen_height)
+global_vars.register(gm=gm)
 
 screen.listen()
 screen.onkey(ship.move_right, "d")

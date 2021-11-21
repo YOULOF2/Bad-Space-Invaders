@@ -1,5 +1,7 @@
-from turtle import Turtle
 import logging
+from turtle import Turtle
+
+from global_vars import global_vars
 
 DISTANCE_FROM_BORDER = 10
 
@@ -9,6 +11,7 @@ PEN_WIDTH_PRIMARY = 8
 PEN_WIDTH_SECONDARY = 4
 
 FONT = ("Arial", 50, "bold")
+LIVES_FONT = ("Arial", 25, "bold")
 TITLE_TEXT = "BAD Space Invaders"
 
 START_BTN = "icons/start_btn.gif"
@@ -17,14 +20,13 @@ DISTANCE_BOTTOM_BORDER = -300
 
 
 class GameManager(Turtle):
-    def __init__(self, screen_obj, width: int, height: int, ship_obj, alien_dealer):
+    __slots__ = "logger", "__half_width", "__half_height", "start_btn", "ship", "alien_dealer"
+
+    def __init__(self, width: int, height: int):
         """
         
-        :param screen_obj: 
         :param width: 
         :param height: 
-        :param ship_obj: 
-        :param alien_dealer: 
         """""
         super().__init__()
 
@@ -33,7 +35,7 @@ class GameManager(Turtle):
 
         self.speed(0)
 
-        self.screen = screen_obj
+        self.screen = global_vars.screen_obj
         self.__half_width = width / 2
         self.__half_height = height / 2
 
@@ -48,8 +50,8 @@ class GameManager(Turtle):
         self.start_btn.shape(START_BTN)
         self.start_btn.onclick(self.__start_game)
 
-        self.ship = ship_obj
-        self.alien_dealer = alien_dealer
+        self.ship = global_vars.ship_obj
+        self.alien_dealer = global_vars.alien_dealer_obj
 
         self.screen.update()
 
@@ -106,16 +108,23 @@ class GameManager(Turtle):
 
         self.screen.update()
 
+    def update_player_health(self):
+        self.penup()
+        self.goto(-550, DISTANCE_BOTTOM_BORDER)
+        self.write(f"Lives left: {self.ship.lives}", font=LIVES_FONT)
+
     def __start_game(self, *args):
         self.logger.info("Starting game")
 
         self.start_btn.hideturtle()
         del self.start_btn
+
         self.clear()
         self.__draw_border()
         self.__create_bottom_bar()
         self.screen.update()
 
         self.ship.init(self.__half_height)
+        self.update_player_health()
 
         self.alien_dealer.next_stage()

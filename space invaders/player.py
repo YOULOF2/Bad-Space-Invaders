@@ -1,8 +1,10 @@
-from turtle import Turtle
-from datetime import datetime
-import pathlib
-from time import sleep
 import logging
+import pathlib
+from datetime import datetime
+from time import sleep
+from turtle import Turtle
+
+from global_vars import global_vars
 
 NORMAL = f"{pathlib.Path(__file__).parent.resolve()}/icons/normal.gif"
 
@@ -22,9 +24,13 @@ SLEEP_TIME = 0.009
 
 DISTANCE_FROM_ALIENS = 50
 
+SHIP_LIVES = 3
+
 
 class Bullet(Turtle):
-    def __init__(self, start_coord: list, screen_obj, alien_dealer):
+    __slots__ = "start_coord", "screen", "dealer", "logger"
+
+    def __init__(self, start_coord: list):
         super().__init__()
 
         self.setheading(90)
@@ -37,8 +43,8 @@ class Bullet(Turtle):
         self.start_coord = start_coord
         self.goto(self.start_coord[0], self.start_coord[1])
 
-        self.screen = screen_obj
-        self.dealer = alien_dealer
+        self.screen = global_vars.screen_obj
+        self.dealer = global_vars.alien_dealer_obj
 
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(logging.StreamHandler())
@@ -57,16 +63,22 @@ class Bullet(Turtle):
 
             for alien in self.dealer.alien_list:
                 if self.distance(alien) < DISTANCE_FROM_ALIENS:
+                    alien.health -= 1
+                    print(f"Alien health: {alien.health}")
+                    if alien.health == 0:
+                        self.hideturtle()
+                        alien.hideturtle()
+                        self.dealer.alien_list.remove(alien)
+
+                        self.__is_killed()
+
+                        self.screen.update()
+                        del alien
+                        return
+
                     self.hideturtle()
-                    alien.hideturtle()
-                    self.dealer.alien_list.remove(alien)
-
-                    self.__is_killed()
-
                     self.screen.update()
                     del self
-                    del alien
-
                     return
 
     def return_obj(self):
@@ -74,10 +86,12 @@ class Bullet(Turtle):
 
 
 class Ship(Turtle):
-    def __init__(self, screen_obj, alien_dealer):
+    __slots__ = "screen", "screen_width", "last_bullet", "bullets_shot", "alien_dealer", "lives"
+
+    def __init__(self):
         super().__init__()
 
-        self.screen = screen_obj
+        self.screen = global_vars.screen_obj
         self.penup()
         self.hideturtle()
         self.speed(0)
@@ -91,8 +105,9 @@ class Ship(Turtle):
         self.last_bullet = []
         self.is_init = False
         self.bullets_shot = []
+        self.lives = SHIP_LIVES
 
-        self.alien_dealer = alien_dealer
+        self.alien_dealer = global_vars.alien_dealer_obj
 
     def __reset_icon(self):
         self.shape(NORMAL)
@@ -130,7 +145,7 @@ class Ship(Turtle):
         if self.is_init:
             self.__reset_icon()
             coordinates = [self.xcor(), self.ycor()]
-            bullet_obj = Bullet(coordinates, self.screen, self.alien_dealer)
+            bullet_obj = Bullet(coordinates)
             self.bullets_shot.append(bullet_obj.return_obj())
 
             try:
