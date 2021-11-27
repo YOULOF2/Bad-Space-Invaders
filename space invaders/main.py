@@ -1,35 +1,26 @@
-import logging
-from turtle import Screen
+import tkinter
+import turtle
+from player import Player
+from score_board import draw_border
 
-from aliens import AlienDealer
-from game_manager import GameManager
-from global_vars import global_vars
-from player import Ship
+CANVAS_WIDTH, CANVAS_HEIGHT = 800, 800
+BG_COLOUR = "#000000"
 
-logging.basicConfig(filename="logfile.log", encoding="utf-8", level=logging.DEBUG, format="%(levelname)s: %(message)s")
+# TODO: Create Alien Class
 
-BACKGROUND_IMG = "icons/background.gif"
+screen = turtle.Screen()
+screen.bgcolor(BG_COLOUR)
+screen.setup(width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+screen.tracer(0, 0)
 
-screen = Screen()
-screen.setup(width=1200, height=780)
-screen.bgpic(BACKGROUND_IMG)
-screen.tracer(0)
+draw_border()
 
-screen_width = screen.window_width()
-screen_height = screen.window_height()
-
-global_vars.register(screen=screen)
-alien_dealer = AlienDealer()
-global_vars.register(alien_dealer=alien_dealer)
-ship = Ship()
-global_vars.register(ship=ship)
-gm = GameManager(screen_width, screen_height)
-global_vars.register(gm=gm)
+player = Player()
 
 screen.listen()
-screen.onkey(ship.move_right, "d")
-screen.onkey(ship.move_left, "a")
-screen.onkey(ship.shoot, "space")
+screen.onkey(player.move_right, "d")
+screen.onkey(player.move_left, "a")
+screen.onkey(player.shoot_bullet, "w")
 
 if __name__ == "__main__":
-    screen.mainloop()
+    tkinter.mainloop()

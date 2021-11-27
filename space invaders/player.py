@@ -1,159 +1,111 @@
-import logging
-import pathlib
+from turtle import Turtle
 from datetime import datetime
 from time import sleep
-from turtle import Turtle
+import gc
 
-from global_vars import global_vars
+PLAYER_MOVEMENT_SIZE: int = 20
+BULLET_MOVE_DISTANCE: int = 20
+STARTING_YCOR: int = -340
+SLEEP_TIME: float = 0.01
 
-NORMAL = f"{pathlib.Path(__file__).parent.resolve()}/icons/normal.gif"
+BULLET_FREQUENCY: int = 600000
 
-MOVEMENT_SIZE = 30
-
-DISTANCE_FROM_BORDER = 50
-
-SHAPE_SIZE = 3
-
-ALLOWED_TIME_RANGE = 500000
-
-SPEED = 10
-
-MOVE_DISTANCE = 20
-
-SLEEP_TIME = 0.009
-
-DISTANCE_FROM_ALIENS = 50
-
-SHIP_LIVES = 3
+PLAYER_SHAPE, BULLET_SHAPE = "images/player.gif", "images/player_bullet.gif"
 
 
+#   TODO: Create Bullets
 class Bullet(Turtle):
-    __slots__ = "start_coord", "screen", "dealer", "logger"
+    def __init__(self, player_coord: tuple):
+        super(Bullet, self).__init__()
 
-    def __init__(self, start_coord: list):
-        super().__init__()
-
-        self.setheading(90)
-        self.hideturtle()
-        self.shape("square")
-        self.shapesize(stretch_wid=0.5, stretch_len=1)
-        self.color("white")
         self.penup()
-
-        self.start_coord = start_coord
-        self.goto(self.start_coord[0], self.start_coord[1])
-
-        self.screen = global_vars.screen_obj
-        self.dealer = global_vars.alien_dealer_obj
-
-        self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(logging.StreamHandler())
-
-    def __is_killed(self):
-        if len(self.dealer.alien_list) == 0:
-            self.logger.info("All aliens defeated")
-            self.dealer.next_stage()
-
-    def move(self):
-        self.showturtle()
-        for _ in range(60):
-            sleep(SLEEP_TIME)
-            self.forward(MOVE_DISTANCE)
-            self.screen.update()
-
-            for alien in self.dealer.alien_list:
-                if self.distance(alien) < DISTANCE_FROM_ALIENS:
-                    alien.health -= 1
-                    print(f"Alien health: {alien.health}")
-                    if alien.health == 0:
-                        self.hideturtle()
-                        alien.hideturtle()
-                        self.dealer.alien_list.remove(alien)
-
-                        self.__is_killed()
-
-                        self.screen.update()
-                        del alien
-                        return
-
-                    self.hideturtle()
-                    self.screen.update()
-                    del self
-                    return
-
-    def return_obj(self):
-        return self
-
-
-class Ship(Turtle):
-    __slots__ = "screen", "screen_width", "last_bullet", "bullets_shot", "alien_dealer", "lives"
-
-    def __init__(self):
-        super().__init__()
-
-        self.screen = global_vars.screen_obj
-        self.penup()
-        self.hideturtle()
+        self.goto(player_coord[0], player_coord[1])
         self.speed(0)
 
-        self.screen.register_shape(NORMAL)
+        self.screen = self.getscreen()
+        self.screen.register_shape(BULLET_SHAPE)
+        self.shape(BULLET_SHAPE)
 
-        self.__reset_icon()
-
-        self.screen_width = self.screen.window_width()
-
-        self.last_bullet = []
-        self.is_init = False
-        self.bullets_shot = []
-        self.lives = SHIP_LIVES
-
-        self.alien_dealer = global_vars.alien_dealer_obj
-
-    def __reset_icon(self):
-        self.shape(NORMAL)
-
-    def init(self, half_height):
-        self.sety(DISTANCE_FROM_BORDER - half_height)
-        self.showturtle()
         self.screen.update()
 
-        self.is_init = True
+        self._move()
 
-    def move_right(self):
-        if self.is_init:
-            x_cor = self.xcor() + MOVEMENT_SIZE
-            self.setx(x_cor)
-
-            if self.xcor() > (self.screen_width / 2):
-                self.hideturtle()
-                self.setx(-self.screen_width / 2)
-                self.showturtle()
+    def _move(self):
+        moving = True
+        while moving:
+            sleep(SLEEP_TIME)
             self.screen.update()
+            current_coord = self.ycor()
+            self.sety(current_coord + BULLET_MOVE_DISTANCE)
+
+            if self.ycor() > 410:
+                self.hideturtle()
+                moving = False
+                self.screen.update()
+        del self
+        gc.collect()
+
+
+# TODO: Create Player Class
+class Player(Turtle):
+    def __init__(self):
+        super(Player, self).__init__()
+
+        self.penup()
+        self.speed(0)
+        self.sety(STARTING_YCOR)
+
+        self.last_bullet_shot = []
+        self.last_bullet_shot.append({
+            "gun": "right",
+            "last_bullet": datetime.now()
+        })
+        self.screen = self.getscreen()
+        self.screen.register_shape(PLAYER_SHAPE)
+        self.shape(PLAYER_SHAPE)
+
+        self.screen.update()
+
+    def _turret(self):
+        if self.last_bullet_shot[-1].get("gun") == "right":
+            self.last_bullet_shot.append({
+                "gun": "left",
+                "last_bullet": datetime.now()
+            })
+            current_coordinates = (self.xcor() + 10, self.ycor())
+            Bullet(current_coordinates)
+        elif self.last_bullet_shot[-1].get("gun") == "left":
+            self.last_bullet_shot.append({
+                "gun": "right",
+                "last_bullet": datetime.now()
+            })
+            current_coordinates = (self.xcor() - 10, self.ycor())
+            Bullet(current_coordinates)
+
+    #   TODO: Add Movement
+    def move_right(self):
+        print("Moving Right")
+        current_x = self.xcor()
+        self.setx(current_x + PLAYER_MOVEMENT_SIZE)
+
+        if self.xcor() > 390:
+            self.setx(-400)
+
+        self.screen.update()
 
     def move_left(self):
-        if self.is_init:
-            x_cor = self.xcor() - MOVEMENT_SIZE
-            self.setx(x_cor)
+        print("Moving left")
+        current_x = self.xcor()
+        self.setx(current_x - PLAYER_MOVEMENT_SIZE)
 
-            if (self.xcor() < -600) and (self.xcor() < (self.screen_width / 2)):
-                self.hideturtle()
-                self.setx(self.screen_width / 2)
-                self.showturtle()
-            self.screen.update()
+        if self.xcor() < -390:
+            self.setx(400)
 
-    def shoot(self):
-        if self.is_init:
-            self.__reset_icon()
-            coordinates = [self.xcor(), self.ycor()]
-            bullet_obj = Bullet(coordinates)
-            self.bullets_shot.append(bullet_obj.return_obj())
+        self.screen.update()
 
-            try:
-                time_dif = (datetime.now() - self.last_bullet[-1]).microseconds
-            except IndexError:
-                self.last_bullet.append(datetime.now())
-                bullet_obj.move()
-            else:
-                if time_dif > ALLOWED_TIME_RANGE:
-                    self.last_bullet.append(datetime.now())
-                    bullet_obj.move()
+    #   TODO: Create Bullet
+    def shoot_bullet(self):
+        print("PEW")
+        time_dif = (datetime.now() - self.last_bullet_shot[-1].get("last_bullet")).microseconds
+        if time_dif >= BULLET_FREQUENCY:
+            self._turret()
