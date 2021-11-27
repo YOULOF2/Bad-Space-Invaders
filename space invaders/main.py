@@ -3,14 +3,14 @@ import turtle
 from player import Player
 from score_board import draw_border
 
-CANVAS_WIDTH, CANVAS_HEIGHT = 800, 800
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 800
 BG_COLOUR = "#000000"
 
 # TODO: Create Alien Class
 
 screen = turtle.Screen()
 screen.bgcolor(BG_COLOUR)
-screen.setup(width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+screen.setup(width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
 screen.tracer(0, 0)
 
 draw_border()

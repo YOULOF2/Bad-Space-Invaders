@@ -56,10 +56,7 @@ class Player(Turtle):
         self.sety(STARTING_YCOR)
 
         self.last_bullet_shot = []
-        self.last_bullet_shot.append({
-            "gun": "right",
-            "last_bullet": datetime.now()
-        })
+        self.last_bullet_shot.append(self._return_last_bullet("left"))
         self.screen = self.getscreen()
         self.screen.register_shape(PLAYER_SHAPE)
         self.shape(PLAYER_SHAPE)
@@ -68,23 +65,29 @@ class Player(Turtle):
 
     def _turret(self):
         if self.last_bullet_shot[-1].get("gun") == "right":
-            self.last_bullet_shot.append({
-                "gun": "left",
-                "last_bullet": datetime.now()
-            })
-            current_coordinates = (self.xcor() + 10, self.ycor())
+            self.last_bullet_shot.append(self._return_last_bullet("right"))
+            current_coordinates = (self.xcor() + 12, self.ycor())
             Bullet(current_coordinates)
         elif self.last_bullet_shot[-1].get("gun") == "left":
-            self.last_bullet_shot.append({
+            self.last_bullet_shot.append(self._return_last_bullet("left"))
+            current_coordinates = (self.xcor() - 12, self.ycor())
+            Bullet(current_coordinates)
+
+    @staticmethod
+    def _return_last_bullet(gun):
+        if gun == "right":
+            return {
+                "gun": "left",
+                "last_bullet": datetime.now()
+            }
+        else:
+            return {
                 "gun": "right",
                 "last_bullet": datetime.now()
-            })
-            current_coordinates = (self.xcor() - 10, self.ycor())
-            Bullet(current_coordinates)
+            }
 
     #   TODO: Add Movement
     def move_right(self):
-        print("Moving Right")
         current_x = self.xcor()
         self.setx(current_x + PLAYER_MOVEMENT_SIZE)
 
@@ -94,7 +97,6 @@ class Player(Turtle):
         self.screen.update()
 
     def move_left(self):
-        print("Moving left")
         current_x = self.xcor()
         self.setx(current_x - PLAYER_MOVEMENT_SIZE)
 
@@ -105,7 +107,6 @@ class Player(Turtle):
 
     #   TODO: Create Bullet
     def shoot_bullet(self):
-        print("PEW")
         time_dif = (datetime.now() - self.last_bullet_shot[-1].get("last_bullet")).microseconds
         if time_dif >= BULLET_FREQUENCY:
             self._turret()
