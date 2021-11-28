@@ -1,29 +1,22 @@
 from turtle import Turtle
 
-PRIMARY_PEN_COLOUR = "#FF0000"
-SECONDARY_PEN_COLOUR = "#0000FF"
-
-CORNER_COORD = 390
+FONT = ("Arial", 12, "Bold")
+SCOREBOARD_FONT = "#FFFFFF"
 
 
-def draw_border():
-    def draw_square(pen_size):
-        border.pensize(pen_size)
-        border.goto(CORNER_COORD, CORNER_COORD)
-        border.pendown()
-        border.goto(CORNER_COORD, -CORNER_COORD)
-        border.goto(-CORNER_COORD, -CORNER_COORD)
-        border.goto(-CORNER_COORD, CORNER_COORD)
-        border.goto(CORNER_COORD, CORNER_COORD)
-        border.penup()
+class ScoreBoard(Turtle):
+    def __init__(self):
+        super().__init__()
+        self.penup()
+        self.hideturtle()
+        self.pencolor(SCOREBOARD_FONT)
 
-    border = Turtle()
-    screen = border.getscreen()
-    border.hideturtle()
-    border.penup()
+        self.player_lives: int = 3
+        self.player_score: int = 0
 
-    border.pencolor(PRIMARY_PEN_COLOUR)
-    draw_square(8)
+    def draw_scoreboard(self):
+        self.goto(-360, 360)
+        self.write(f"Your Score: {self.player_score}", font=FONT)
 
-    border.pencolor(SECONDARY_PEN_COLOUR)
-    draw_square(4)
+        self.goto(-360, -360)
+        self.write(f"Lives left: {self.player_lives}")
