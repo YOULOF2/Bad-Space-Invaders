@@ -76,11 +76,13 @@ class Player(Turtle):
     @staticmethod
     def _return_last_bullet(gun):
         if gun == "right":
+            # Returns the next bullet to be fired from the left cannon
             return {
                 "gun": "left",
                 "last_bullet": datetime.now()
             }
         else:
+            # Returns the next bullet to be fired from the right cannon
             return {
                 "gun": "right",
                 "last_bullet": datetime.now()
