@@ -5,7 +5,8 @@ from barrier import BarrierGen
 from aliens import gen_level
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 800
-BG_COLOUR = "#000000"
+# BG_COLOUR = "#FFFFFF"
+BG_COLOUR = "#696969"
 
 screen = Screen()
 screen.bgcolor(BG_COLOUR)

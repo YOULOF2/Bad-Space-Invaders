@@ -5,7 +5,6 @@ import threading
 import queue
 from score_board import scoreboard, DrawScoreBoard
 import pathlib
-from barrier import Barrier
 
 graphics = queue.Queue(1)
 draw_scoreboard = DrawScoreBoard()
@@ -25,11 +24,11 @@ PLAYER_SHAPE, BULLET_SHAPE = f"{base_path}/images/player.gif", f"{base_path}/ima
 
 #   TODO: Create Bullets
 class Bullet(Turtle):
-    def __init__(self, player_coord: tuple):
+    def __init__(self):
         super(Bullet, self).__init__()
 
+        self.hideturtle()
         self.penup()
-        self.goto(player_coord[0], player_coord[1])
         self.speed(0)
 
         self.screen = self.getscreen()
@@ -37,6 +36,11 @@ class Bullet(Turtle):
         self.shape(BULLET_SHAPE)
 
         self.screen.update()
+        self.hideturtle()
+
+    def init(self, player_coord: tuple):
+        self.goto(player_coord[0], player_coord[1])
+        self.showturtle()
 
     def move(self):
         moving = True
@@ -48,9 +52,9 @@ class Bullet(Turtle):
 
             # Check if there is an intersection between the bullet obj. and any other turtle, except the Player obj
             # This includes Aliens and Barriers
-            all_aliens = [turtle for turtle in self.screen.turtles() if hasattr(turtle, "is_dead")]
-            for turtle_obj in all_aliens:
-                if self.distance(turtle_obj) < DISTANCE_FROM_BULLET:
+            all_turtles = [turtle for turtle in self.screen.turtles() if not isinstance(turtle, Player)]
+            for turtle_obj in all_turtles:
+                if self.distance(turtle_obj) < DISTANCE_FROM_BULLET and not isinstance(turtle_obj, Bullet):
                     turtle_obj.is_dead = True
                     draw_scoreboard.write_score()
                     scoreboard.player_score += 100
@@ -60,21 +64,22 @@ class Bullet(Turtle):
                     self.goto(TURTLE_HIDE_LOCATION_X, TURTLE_HIDE_LOCATION_Y)
                     self.screen.update()
 
-                    return
+                    break
+
+            all_aliens = [turtle for turtle in self.screen.turtles() if hasattr(turtle, "is_dead")]
 
             all_dead_aliens = [turtle for turtle in self.screen.turtles()
                                if hasattr(turtle, "is_dead") and turtle.is_dead]
 
             if len(all_aliens) == len(all_dead_aliens):
                 print("All aliens dead")
-                return
+                break
 
             if self.ycor() > 400:
                 self.hideturtle()
-                self.goto(TURTLE_HIDE_LOCATION_X, TURTLE_HIDE_LOCATION_Y)
                 self.screen.update()
 
-                return
+                break
 
 
 # TODO: Create Player Class
@@ -94,24 +99,30 @@ class Player(Turtle):
         self.screen.register_shape(PLAYER_SHAPE)
         self.shape(PLAYER_SHAPE)
 
+        self._right_bullet = Bullet()
+        self._left_bullet = Bullet()
+
         self.screen.update()
+
+    def reset_player(self):
+        self.goto(0, STARTING_YCOR)
 
     def _turret(self):
         if self.last_bullet_shot[-1].get("gun") == "right":
             self.last_bullet_shot.append(self._return_last_bullet("right"))
             current_coordinates = (self.xcor() + 12, self.ycor())
-            bullet = Bullet(current_coordinates)
+            self._right_bullet.init(current_coordinates)
 
-            thread = threading.Thread(target=bullet.move)
+            thread = threading.Thread(target=self._right_bullet.move)
             thread.daemon = True
             thread.start()
 
         elif self.last_bullet_shot[-1].get("gun") == "left":
             self.last_bullet_shot.append(self._return_last_bullet("left"))
             current_coordinates = (self.xcor() - 12, self.ycor())
-            bullet = Bullet(current_coordinates)
+            self._left_bullet.init(current_coordinates)
 
-            thread = threading.Thread(target=bullet.move)
+            thread = threading.Thread(target=self._left_bullet.move)
             thread.daemon = True
             thread.start()
 

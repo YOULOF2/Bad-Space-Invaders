@@ -23,6 +23,7 @@ class DrawScoreBoard(Turtle):
 
     def write_score(self):
         self.clear()
+        self.screen.update()
         self.hideturtle()
         self.goto(-370, 360)
         self.write(f"Your Score: {scoreboard.player_score}", font=FONT)
