@@ -5,6 +5,7 @@ import threading
 import queue
 from score_board import scoreboard, DrawScoreBoard
 import pathlib
+from barrier import Barrier
 
 graphics = queue.Queue(1)
 draw_scoreboard = DrawScoreBoard()
@@ -47,9 +48,9 @@ class Bullet(Turtle):
 
             # Check if there is an intersection between the bullet obj. and any other turtle, except the Player obj
             # This includes Aliens and Barriers
-            all_turtles = [turtle for turtle in self.screen.turtles() if not isinstance(turtle, Player)]
-            for turtle_obj in all_turtles:
-                if self.distance(turtle_obj) < DISTANCE_FROM_BULLET and not isinstance(turtle_obj, Bullet):
+            all_aliens = [turtle for turtle in self.screen.turtles() if hasattr(turtle, "is_dead")]
+            for turtle_obj in all_aliens:
+                if self.distance(turtle_obj) < DISTANCE_FROM_BULLET:
                     turtle_obj.is_dead = True
                     draw_scoreboard.write_score()
                     scoreboard.player_score += 100
@@ -61,19 +62,12 @@ class Bullet(Turtle):
 
                     return
 
-            # check_if = lambda turtle: (not isinstance(turtle, Player) and not isinstance(turtle, Bullet) and
-            #                            not isinstance(turtle, Barrier) and not isinstance(turtle, DrawScoreBoard))
-            #
-            # all_aliens = [turtle for turtle in self.screen.turtles() if check_if(turtle)]
-            #
-            # all_dead_aliens = [turtle for turtle in self.screen.turtles() if check_if(turtle) and turtle.is_dead]
-            #
-            # pprint(all_dead_aliens)
-            #
-            # if len(all_aliens) == len(all_dead_aliens):
-            #     print("All aliens dead")
+            all_dead_aliens = [turtle for turtle in self.screen.turtles()
+                               if hasattr(turtle, "is_dead") and turtle.is_dead]
 
-            # pprint(all_turtles)
+            if len(all_aliens) == len(all_dead_aliens):
+                print("All aliens dead")
+                return
 
             if self.ycor() > 400:
                 self.hideturtle()

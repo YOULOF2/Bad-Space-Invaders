@@ -4,6 +4,8 @@ from time import sleep
 import gc
 import threading
 import queue
+from typing import Type
+
 from player import Player
 from barrier import Barrier
 from score_board import scoreboard, DrawScoreBoard
@@ -16,6 +18,7 @@ base_path = pathlib.Path(__file__).parent.resolve()
 SLEEP_TIME = 1
 TURTLE_HIDE_LOCATION_X, TURTLE_HIDE_LOCATION_Y = 1000, 1000
 DISTANCE_FROM_BARRIER = 50
+DISTANCE_FROM_PLAYER = 50
 MOVEMENT_INCREMENT = 5
 
 
@@ -48,7 +51,7 @@ class AlienBaseClass(Turtle):
                     self.screen.update()
 
             player_obj = [turtle for turtle in self.screen.turtles() if isinstance(turtle, Player)][0]
-            if self.distance(player_obj) < DISTANCE_FROM_BARRIER:
+            if self.distance(player_obj) < DISTANCE_FROM_PLAYER:
                 self.hideturtle()
                 self.goto(TURTLE_HIDE_LOCATION_X, TURTLE_HIDE_LOCATION_Y)
                 scoreboard.player_lives -= 1
